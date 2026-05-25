@@ -7,6 +7,9 @@ from app.core.logging import setup_logging
 from app.api.health import router as health_router
 from app.api.llm import router as llm_router
 
+from app.services.qdrant_service import QdrantService
+from app.api.upload import router as upload_router
+
 setup_logging()
 
 logger = structlog.get_logger()
@@ -18,13 +21,22 @@ app = FastAPI(
 
 app.include_router(health_router)
 app.include_router(llm_router)
+app.include_router(upload_router)
 
 
 @app.on_event("startup")
 async def startup_event():
+
     logger.info(
         "Application started",
         app=settings.APP_NAME
+    )
+
+    qdrant_service = QdrantService()
+    qdrant_service.create_collection()
+
+    logger.info(
+        "Qdrant collection initialized"
     )
 
 

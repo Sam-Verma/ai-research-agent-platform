@@ -20,18 +20,13 @@ class LLMService:
     )
     async def generate(
         self,
-        prompt: str,
+        messages: list,
         temperature: float = 0.7,
     ) -> str:
 
         response = await self.client.chat.completions.create(
             model=self.model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
+            messages=messages,
             temperature=temperature,
         )
 

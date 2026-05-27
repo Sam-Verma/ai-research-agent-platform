@@ -9,6 +9,7 @@ from app.api.llm import router as llm_router
 
 from app.services.qdrant_service import QdrantService
 from app.api.upload import router as upload_router
+from app.api.rag import router as rag_router
 
 setup_logging()
 
@@ -22,6 +23,7 @@ app = FastAPI(
 app.include_router(health_router)
 app.include_router(llm_router)
 app.include_router(upload_router)
+app.include_router(rag_router)
 
 
 @app.on_event("startup")

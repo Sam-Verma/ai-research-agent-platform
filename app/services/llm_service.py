@@ -1,3 +1,6 @@
+import certifi
+import httpx
+
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -7,9 +10,14 @@ from app.core.config import settings
 class LLMService:
 
     def __init__(self):
+
+        http_client = httpx.AsyncClient(
+        verify=False
+        )
         self.client = AsyncOpenAI(
             api_key=settings.LLM_API_KEY,
             base_url=settings.LLM_BASE_URL,
+            http_client=http_client
         )
 
         self.model = settings.LLM_MODEL

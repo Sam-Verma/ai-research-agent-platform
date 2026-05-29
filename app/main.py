@@ -13,6 +13,10 @@ from app.api.rag import router as rag_router
 from app.api.agent import router as agent_router
 from app.api.stream import router as stream_router
 
+from app.api.tool_agent import (
+    router as tool_agent_router
+)
+
 setup_logging()
 
 logger = structlog.get_logger()
@@ -28,6 +32,8 @@ app.include_router(upload_router)
 app.include_router(rag_router)
 app.include_router(agent_router)
 app.include_router(stream_router)
+
+app.include_router(tool_agent_router)
 
 
 @app.on_event("startup")

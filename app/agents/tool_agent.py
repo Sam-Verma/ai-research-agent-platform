@@ -1,27 +1,30 @@
+import json
+
 from app.services.llm_service import LLMService
-from app.tools.retrieval_tool import search_documents
+
+from app.tools.retrieval_tool import (
+    search_documents,
+    retrieval_tool_definition,
+)
 
 
 llm_service = LLMService()
 
 
-async def tool_agent(question: str):
+TOOLS = [
+    retrieval_tool_definition
+]
 
-    retrieval_context = search_documents(
-        question
-    )
+
+async def tool_agent(question: str):
 
     messages = [
         {
             "role": "system",
-            "content": f"""
-            You are an AI research agent.
+            "content": """
+            You are an AI research assistant.
 
-            Use the provided retrieved context
-            to answer accurately.
-
-            Retrieved Context:
-            {retrieval_context}
+            Use tools when necessary.
             """
         },
         {
@@ -30,11 +33,63 @@ async def tool_agent(question: str):
         }
     ]
 
-    response = await llm_service.generate(
-        messages=messages
+    response = await (
+        llm_service.client.chat.completions.create(
+            model=llm_service.model,
+            messages=messages,
+            tools=TOOLS,
+            tool_choice="auto",
+        )
     )
 
+    message = response.choices[0].message
+
+    if message.tool_calls:
+
+        tool_call = message.tool_calls[0]
+
+        function_name = (
+            tool_call.function.name
+        )
+
+        arguments = json.loads(
+            tool_call.function.arguments
+        )
+
+        if function_name == "search_documents":
+
+            tool_result = search_documents(
+                query=arguments["query"]
+            )
+
+            messages.append(message)
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": tool_result,
+                }
+            )
+
+            final_response = await (
+                llm_service.client.chat.completions.create(
+                    model=llm_service.model,
+                    messages=messages,
+                )
+            )
+
+            return {
+                "answer":
+                    final_response
+                    .choices[0]
+                    .message
+                    .content,
+
+                "tool_used": function_name,
+            }
+
     return {
-        "answer": response,
-        "retrieved_context": retrieval_context,
+        "answer": message.content,
+        "tool_used": None,
     }

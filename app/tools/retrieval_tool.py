@@ -5,6 +5,26 @@ from app.services.qdrant_service import QdrantService
 embedding_service = EmbeddingService()
 qdrant_service = QdrantService()
 
+retrieval_tool_definition = {
+    "type": "function",
+    "function": {
+        "name": "search_documents",
+        "description": """
+        Search uploaded documents
+        for relevant information.
+        """,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Search query"
+                }
+            },
+            "required": ["query"]
+        }
+    }
+}
 
 def search_documents(
     query: str,

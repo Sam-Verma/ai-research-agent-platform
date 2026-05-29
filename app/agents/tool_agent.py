@@ -6,13 +6,18 @@ from app.tools.retrieval_tool import (
     search_documents,
     retrieval_tool_definition,
 )
+from app.tools.web_search_tool import (
+    web_search,
+    web_search_tool_definition,
+)
 
 
 llm_service = LLMService()
 
 
 TOOLS = [
-    retrieval_tool_definition
+    retrieval_tool_definition,
+    web_search_tool_definition,
 ]
 
 
@@ -69,6 +74,39 @@ async def tool_agent(question: str):
                     "role": "tool",
                     "tool_call_id": tool_call.id,
                     "content": tool_result,
+                }
+            )
+
+            final_response = await (
+                llm_service.client.chat.completions.create(
+                    model=llm_service.model,
+                    messages=messages,
+                )
+            )
+
+            return {
+                "answer":
+                    final_response
+                    .choices[0]
+                    .message
+                    .content,
+
+                "tool_used": function_name,
+            }
+        
+        elif function_name == "web_search":
+
+            tool_result = web_search(
+                query=arguments["query"]
+            )
+
+            messages.append(message)
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": str(tool_result),
                 }
             )
 

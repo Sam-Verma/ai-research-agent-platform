@@ -11,6 +11,7 @@ from app.services.qdrant_service import QdrantService
 from app.api.upload import router as upload_router
 from app.api.rag import router as rag_router
 from app.api.agent import router as agent_router
+from app.api.stream import router as stream_router
 
 setup_logging()
 
@@ -26,6 +27,7 @@ app.include_router(llm_router)
 app.include_router(upload_router)
 app.include_router(rag_router)
 app.include_router(agent_router)
+app.include_router(stream_router)
 
 
 @app.on_event("startup")

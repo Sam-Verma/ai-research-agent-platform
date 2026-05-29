@@ -39,3 +39,23 @@ class LLMService:
         )
 
         return response.choices[0].message.content
+    
+    async def stream_generate(
+        self,
+        messages: list,
+        temperature: float = 0.7,
+    ):
+
+        stream = await self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=temperature,
+            stream=True,
+        )
+
+        async for chunk in stream:
+
+            delta = chunk.choices[0].delta.content
+
+            if delta:
+                yield delta

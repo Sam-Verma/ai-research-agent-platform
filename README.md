@@ -21,6 +21,27 @@ The system is designed to:
 
 ---
 
+## 🎯 Why This Project?
+
+Modern AI systems require more than simple chat interfaces. This project explores how production-grade research assistants are built using Retrieval-Augmented Generation (RAG), multi-agent orchestration, dynamic tool calling, semantic search, and streaming responses.
+
+The goal is to demonstrate practical GenAI engineering patterns used in intelligent research systems, knowledge assistants, and autonomous AI workflows.
+
+---
+
+## ⭐ Key Highlights
+
+* Multi-agent orchestration using LangGraph
+* Agentic RAG with semantic retrieval
+* Dynamic tool calling
+* Hybrid knowledge retrieval (documents + web search)
+* Streaming AI responses (SSE)
+* PostgreSQL, Redis and Qdrant integration
+* Dockerized deployment
+* FastAPI-based async architecture
+
+---
+
 ## ✨ Core Capabilities
 
 ### Multi-Agent Research System
@@ -63,28 +84,29 @@ Final Research Response
 ## 🏗️ System Architecture
 
 ```text
-Frontend (Planned)
-        ↓
-   FastAPI Backend
-        ↓
- Agent Orchestrator
-      (LangGraph)
-        ↓
- ┌──────────────────────┐
- │   Planner Agent      │
- │   Search Agent       │
- │   Retrieval Agent    │
- │   Summarizer Agent   │
- │   Citation Agent     │
- └──────────────────────┘
-        ↓
- ┌──────────────────────┐
- │   Vector DB          │
- │   PostgreSQL         │
- │   Redis              │
- └──────────────────────┘
-        ↓
-      LLM APIs
+## 🏗️ System Architecture
+
+```text
+User
+ ↓
+FastAPI API Layer
+ ↓
+Tool Agent
+ ↓
+LangGraph Workflow
+ ├── Planner Agent
+ ├── Research Agent
+ └── Summarizer Agent
+ ↓
+Tool Layer
+ ├── Vector Retrieval
+ └── Web Search
+ ↓
+Qdrant / External Sources
+ ↓
+LLM
+```
+
 ```
 
 ---
@@ -112,24 +134,27 @@ Frontend (Planned)
 ### Search & Retrieval
 
 * [x] Semantic search
-* [ ] Hybrid retrieval
+* [x] Hybrid retrieval
+* [x] Dynamic tool calling
+* [x] Web search integration
 * [ ] Re-ranking
-* [ ] Real-time web search
 
 ### Response Generation
 
 * [x] Citation-aware generation
+* [x] Streaming responses (SSE)
 * [ ] Structured report generation
-* [ ] Streaming responses
 * [ ] Follow-up contextual chat
 
 ### Infrastructure
 
 * [x] FastAPI backend
-* [x] Modular architecture
+* [x] Dockerized deployment
+* [x] Docker Compose setup
+* [x] PostgreSQL
+* [x] Redis
+* [x] Qdrant
 * [x] Environment configuration
-* [ ] Redis caching
-* [ ] Async task queue
 * [ ] Monitoring & observability
 
 ### Evaluation
@@ -154,7 +179,6 @@ Frontend (Planned)
 
 * LangGraph
 * OpenAI SDK / Gemini
-* LlamaIndex
 * Agentic RAG
 
 ### Databases
@@ -172,6 +196,60 @@ Frontend (Planned)
 
 * Next.js
 * Tailwind CSS
+
+---
+
+## 🔌 API Endpoints
+
+### Health Check
+
+```http
+GET /health
+```
+
+### Upload Documents
+
+```http
+POST /upload
+```
+
+### RAG Query
+
+```http
+POST /rag/ask
+```
+
+### Tool Agent Query
+
+```http
+POST /tool-agent/ask
+```
+
+### Streaming Generation
+
+```http
+POST /stream/generate
+```
+
+---
+
+## ⚡ Quick Start
+
+```bash
+git clone <your-repository>
+
+cd ai_research_agent
+
+cp .env.example .env
+
+docker compose up --build
+```
+
+Open:
+
+```text
+http://localhost:8000/docs
+```
 
 ---
 
@@ -210,7 +288,7 @@ The system may:
 
 ---
 
-## ⚡ Installation
+## 💻 Local Development
 
 ### Clone Repository
 
@@ -298,11 +376,21 @@ uvicorn app.main:app --reload
 
 ## 📸 Demo
 
-### Screenshots
+## Swagger UI
 
-🚧 Screenshots will be added as the platform evolves.
+<img src="screenshots/swagger.png" width="900">
 
-*Current progress includes backend development, Agentic RAG, and multi-agent orchestration.*
+### Document Upload Workflow
+
+(Add screenshot)
+
+### RAG Query Example
+
+(Add screenshot)
+
+### Tool Calling Example
+
+(Add screenshot)
 
 ### Architecture Diagram
 

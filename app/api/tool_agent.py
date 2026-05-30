@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from app.schemas.chat import ChatRequest
 from app.agents.tool_agent import tool_agent
 
 router = APIRouter(
@@ -14,12 +15,8 @@ class ToolAgentRequest(BaseModel):
 
 
 @router.post("/ask")
-async def ask_tool_agent(
-    request: ToolAgentRequest
-):
-
-    result = await tool_agent(
-        request.question
+async def ask(request: ChatRequest):
+    return await tool_agent(
+        session_id=request.session_id,
+        question=request.question,
     )
-
-    return result

@@ -129,15 +129,16 @@ LLM
 ### Search & Retrieval
 
 * [x] Semantic search
-* [x] Hybrid retrieval
 * [x] Dynamic tool calling
 * [x] Web search integration
+* [ ] Hybrid retrieval
 * [ ] Re-ranking
 
 ### Response Generation
 
 * [x] Citation-aware generation
 * [x] Streaming responses (SSE)
+* [x] Persistent conversation memory
 * [ ] Structured report generation
 * [ ] Follow-up contextual chat
 
@@ -150,6 +151,8 @@ LLM
 * [x] Redis
 * [x] Qdrant
 * [x] Environment configuration
+* [x] LangGraph workflow orchestration
+* [x] Alembic database migrations
 * [ ] Monitoring & observability
 
 ### Evaluation

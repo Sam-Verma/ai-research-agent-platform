@@ -1,19 +1,20 @@
 import json
 
 from app.services.llm_service import LLMService
+from app.services.memory_service import MemoryService
 
 from app.tools.retrieval_tool import (
     search_documents,
     retrieval_tool_definition,
 )
+
 from app.tools.web_search_tool import (
     web_search,
     web_search_tool_definition,
 )
 
-
+memory_service = MemoryService()
 llm_service = LLMService()
-
 
 TOOLS = [
     retrieval_tool_definition,
@@ -21,7 +22,24 @@ TOOLS = [
 ]
 
 
-async def tool_agent(question: str):
+async def tool_agent(
+    session_id: str,
+    question: str,
+):
+
+    await memory_service.get_or_create_session(
+        session_id
+    )
+
+    history = await memory_service.get_history(
+        session_id
+    )
+
+    await memory_service.save_message(
+        session_id=session_id,
+        role="user",
+        content=question,
+    )
 
     messages = [
         {
@@ -31,12 +49,17 @@ async def tool_agent(question: str):
 
             Use tools when necessary.
             """
-        },
+        }
+    ]
+
+    messages.extend(history)
+
+    messages.append(
         {
             "role": "user",
             "content": question
         }
-    ]
+    )
 
     response = await (
         llm_service.client.chat.completions.create(
@@ -73,7 +96,7 @@ async def tool_agent(question: str):
                 {
                     "role": "tool",
                     "tool_call_id": tool_call.id,
-                    "content": tool_result,
+                    "content": str(tool_result),
                 }
             )
 
@@ -84,16 +107,24 @@ async def tool_agent(question: str):
                 )
             )
 
-            return {
-                "answer":
-                    final_response
-                    .choices[0]
-                    .message
-                    .content,
+            final_answer = (
+                final_response
+                .choices[0]
+                .message
+                .content
+            )
 
+            await memory_service.save_message(
+                session_id=session_id,
+                role="assistant",
+                content=final_answer,
+            )
+
+            return {
+                "answer": final_answer,
                 "tool_used": function_name,
             }
-        
+
         elif function_name == "web_search":
 
             tool_result = web_search(
@@ -117,15 +148,29 @@ async def tool_agent(question: str):
                 )
             )
 
-            return {
-                "answer":
-                    final_response
-                    .choices[0]
-                    .message
-                    .content,
+            final_answer = (
+                final_response
+                .choices[0]
+                .message
+                .content
+            )
 
+            await memory_service.save_message(
+                session_id=session_id,
+                role="assistant",
+                content=final_answer,
+            )
+
+            return {
+                "answer": final_answer,
                 "tool_used": function_name,
             }
+
+    await memory_service.save_message(
+        session_id=session_id,
+        role="assistant",
+        content=message.content,
+    )
 
     return {
         "answer": message.content,

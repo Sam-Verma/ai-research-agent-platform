@@ -84,9 +84,6 @@ Final Research Response
 ## 🏗️ System Architecture
 
 ```text
-## 🏗️ System Architecture
-
-```text
 User
  ↓
 FastAPI API Layer
@@ -105,8 +102,6 @@ Tool Layer
 Qdrant / External Sources
  ↓
 LLM
-```
-
 ```
 
 ---

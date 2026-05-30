@@ -26,10 +26,20 @@ class ChatSession(Base):
         index=True,
     )
 
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_projects.id"),
+        nullable=True
+    )
+
     messages = relationship(
         "ChatMessage",
         back_populates="session",
         cascade="all, delete-orphan",
+    )
+
+    project = relationship(
+        "ResearchProject",
+        back_populates="chat_sessions"
     )
 
 

@@ -11,6 +11,7 @@ class MemoryService:
 
     async def get_or_create_session(
         self,
+        project_id: int,
         session_id: str,
     ):
 
@@ -18,7 +19,8 @@ class MemoryService:
 
             result = await db.execute(
                 select(ChatSession).where(
-                    ChatSession.session_id == session_id
+                    ChatSession.session_id == session_id,
+                    ChatSession.project_id == project_id,
                 )
             )
 
@@ -28,7 +30,8 @@ class MemoryService:
                 return session
 
             session = ChatSession(
-                session_id=session_id
+                session_id=session_id,
+                project_id=project_id,
             )
 
             db.add(session)
@@ -41,6 +44,7 @@ class MemoryService:
 
     async def save_message(
         self,
+        project_id: int,
         session_id: str,
         role: str,
         content: str,
@@ -50,24 +54,28 @@ class MemoryService:
 
             result = await db.execute(
                 select(ChatSession).where(
-                    ChatSession.session_id == session_id
+                    ChatSession.session_id == session_id,
+                    ChatSession.project_id == project_id,
                 )
             )
 
-            session = result.scalar_one()
+            session = result.scalar_one_or_none()
 
-            message = ChatMessage(
-                session_db_id=session.id,
-                role=role,
-                content=content,
-            )
+            if not session:
 
-            db.add(message)
+                session = ChatSession(
+                    session_id=session_id,
+                    project_id=project_id,
+                )
 
-            await db.commit()
+                db.add(session)
+
+                await db.commit()
+                await db.refresh(session)
 
     async def get_history(
         self,
+        project_id: str,
         session_id: str,
         limit: int = 20,
     ):
@@ -76,7 +84,8 @@ class MemoryService:
 
             result = await db.execute(
                 select(ChatSession).where(
-                    ChatSession.session_id == session_id
+                    ChatSession.session_id == session_id,
+                    ChatSession.project_id == project_id,
                 )
             )
 

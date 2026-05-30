@@ -13,6 +13,7 @@ class RetrievalService:
 
     async def ask(
         self,
+        project_id: int,
         question: str
     ):
 
@@ -21,7 +22,8 @@ class RetrievalService:
         )
 
         results = self.qdrant_service.search(
-            query_embedding=query_embedding
+            query_embedding=query_embedding,
+            project_id=project_id
         )
 
         context = "\n\n".join(
@@ -62,4 +64,8 @@ class RetrievalService:
         return {
             "answer": response,
             "sources_found": len(results),
+            "sources": [
+                r.payload.get("source")
+                for r in results
+            ]
         }

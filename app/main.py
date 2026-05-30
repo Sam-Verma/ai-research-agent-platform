@@ -17,6 +17,10 @@ from app.api.tool_agent import (
     router as tool_agent_router
 )
 
+from app.api.projects import (
+    router as projects_router,
+)
+
 setup_logging()
 
 logger = structlog.get_logger()
@@ -34,6 +38,7 @@ app.include_router(agent_router)
 app.include_router(stream_router)
 
 app.include_router(tool_agent_router)
+app.include_router(projects_router)
 
 
 @app.on_event("startup")

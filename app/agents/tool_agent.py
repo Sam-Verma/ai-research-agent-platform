@@ -23,19 +23,23 @@ TOOLS = [
 
 
 async def tool_agent(
+    project_id: str,
     session_id: str,
     question: str,
 ):
 
     await memory_service.get_or_create_session(
-        session_id
+        project_id,
+        session_id,
     )
 
     history = await memory_service.get_history(
-        session_id
+        project_id,
+        session_id,
     )
 
     await memory_service.save_message(
+        project_id=project_id,
         session_id=session_id,
         role="user",
         content=question,
@@ -115,6 +119,7 @@ async def tool_agent(
             )
 
             await memory_service.save_message(
+                project_id=project_id,
                 session_id=session_id,
                 role="assistant",
                 content=final_answer,
@@ -156,6 +161,7 @@ async def tool_agent(
             )
 
             await memory_service.save_message(
+                project_id=project_id,
                 session_id=session_id,
                 role="assistant",
                 content=final_answer,
@@ -167,6 +173,7 @@ async def tool_agent(
             }
 
     await memory_service.save_message(
+        project_id=project_id,
         session_id=session_id,
         role="assistant",
         content=message.content,

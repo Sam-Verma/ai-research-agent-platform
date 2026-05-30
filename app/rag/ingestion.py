@@ -23,7 +23,8 @@ class IngestionPipeline:
 
     def ingest_pdf(
         self,
-        file_path: str
+        file_path: str,
+        project_id: int,
     ):
 
         loader = PyPDFLoader(file_path)
@@ -46,8 +47,9 @@ class IngestionPipeline:
                 id=str(uuid.uuid4()),
                 vector=embedding,
                 payload={
+                    "project_id": project_id,
                     "text": chunk.page_content,
-                    "source": file_path,
+                    "source": file_path.split("/")[-1],
                 }
             )
 

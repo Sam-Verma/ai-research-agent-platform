@@ -16,7 +16,9 @@ class ToolAgentRequest(BaseModel):
 
 @router.post("/ask")
 async def ask(request: ChatRequest):
+    
     return await tool_agent(
+        project_id=request.project_id,
         session_id=request.session_id,
         question=request.question,
     )

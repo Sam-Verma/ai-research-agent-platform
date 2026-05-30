@@ -1,9 +1,11 @@
 import os
+import uuid
 
 from fastapi import (
     APIRouter,
     UploadFile,
     File,
+    Form,
 )
 
 from app.rag.ingestion import IngestionPipeline
@@ -25,17 +27,23 @@ os.makedirs(
 
 @router.post("/pdf")
 async def upload_pdf(
+    project_id: int = Form(...),
     file: UploadFile = File(...)
 ):
 
-    file_path = f"{UPLOAD_DIR}/{file.filename}"
+    
+    file_path = f"{UPLOAD_DIR}/{uuid.uuid4()}_{file.filename}"
 
     with open(file_path, "wb") as f:
         content = await file.read()
         f.write(content)
 
     result = pipeline.ingest_pdf(
-        file_path=file_path
+        file_path=file_path,
+        project_id=project_id
     )
 
-    return result
+    return {
+        "project_id": project_id,
+        **result
+    }

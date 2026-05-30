@@ -1,8 +1,6 @@
-import certifi
-import httpx
-
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
+import httpx
 
 from app.core.config import settings
 
@@ -22,6 +20,20 @@ class LLMService:
 
         self.model = settings.LLM_MODEL
 
+    def _format_messages(self, messages):
+
+        return [
+            {
+                "role": (
+                    "user"
+                    if msg.type == "human"
+                    else msg.type
+                ),
+                "content": msg.content
+            }
+            for msg in messages
+        ]
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -34,12 +46,12 @@ class LLMService:
 
         response = await self.client.chat.completions.create(
             model=self.model,
-            messages=messages,
+            messages=self._format_messages(messages),
             temperature=temperature,
         )
 
         return response.choices[0].message.content
-    
+
     async def stream_generate(
         self,
         messages: list,
@@ -48,7 +60,7 @@ class LLMService:
 
         stream = await self.client.chat.completions.create(
             model=self.model,
-            messages=messages,
+            messages=self._format_messages(messages),
             temperature=temperature,
             stream=True,
         )

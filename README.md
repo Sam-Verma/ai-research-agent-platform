@@ -115,7 +115,7 @@ LLM
 * [x] Multi-agent orchestration
 * [x] Agentic RAG
 * [x] Context-aware retrieval
-* [ ] Multi-step reasoning
+* [x] Multi-step reasoning
 * [ ] Deep research mode
 
 ### Document Intelligence
@@ -124,6 +124,7 @@ LLM
 * [x] Semantic chunking
 * [x] Embedding generation
 * [x] Vector retrieval
+* [x] Project-scoped document tracking
 * [ ] Multi-modal document understanding
 
 ### Search & Retrieval
@@ -131,6 +132,7 @@ LLM
 * [x] Semantic search
 * [x] Dynamic tool calling
 * [x] Web search integration
+* [x] Full webpage scraping
 * [ ] Hybrid retrieval
 * [ ] Re-ranking
 
@@ -139,8 +141,8 @@ LLM
 * [x] Citation-aware generation
 * [x] Streaming responses (SSE)
 * [x] Persistent conversation memory
-* [ ] Structured report generation
-* [ ] Follow-up contextual chat
+* [x] Structured report generation
+* [x] Saving and retrieving reports
 
 ### Infrastructure
 
@@ -190,10 +192,12 @@ LLM
 * Docker
 * Docker Compose
 
-### Frontend *(Planned)*
+### Frontend
 
-* Next.js
-* Tailwind CSS
+* React (Vite)
+* Tailwind-inspired CSS (Vanilla CSS & CSS Variables)
+* Lucide React Icons
+* Marked (Markdown rendering)
 
 ---
 

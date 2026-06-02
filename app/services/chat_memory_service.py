@@ -1,13 +1,16 @@
 from sqlalchemy import select
 
-from app.db.session import AsyncSessionLocal
+from app.db.session import (
+    AsyncSessionLocal
+)
+
 from app.db.models.chat import (
     ChatSession,
     ChatMessage,
 )
 
 
-class MemoryService:
+class ChatMemoryService:
 
     async def get_or_create_session(
         self,
@@ -19,12 +22,17 @@ class MemoryService:
 
             result = await db.execute(
                 select(ChatSession).where(
-                    ChatSession.session_id == session_id,
-                    ChatSession.project_id == project_id,
+                    ChatSession.project_id
+                    == project_id,
+
+                    ChatSession.session_id
+                    == session_id,
                 )
             )
 
-            session = result.scalar_one_or_none()
+            session = (
+                result.scalar_one_or_none()
+            )
 
             if session:
                 return session
@@ -37,7 +45,6 @@ class MemoryService:
             db.add(session)
 
             await db.commit()
-
             await db.refresh(session)
 
             return session
@@ -54,12 +61,17 @@ class MemoryService:
 
             result = await db.execute(
                 select(ChatSession).where(
-                    ChatSession.session_id == session_id,
-                    ChatSession.project_id == project_id,
+                    ChatSession.project_id
+                    == project_id,
+
+                    ChatSession.session_id
+                    == session_id,
                 )
             )
 
-            session = result.scalar_one_or_none()
+            session = (
+                result.scalar_one_or_none()
+            )
 
             if not session:
 
@@ -73,9 +85,23 @@ class MemoryService:
                 await db.commit()
                 await db.refresh(session)
 
+            message = ChatMessage(
+                session_db_id=session.id,
+                role=role,
+                content=content,
+            )
+
+            db.add(message)
+
+            await db.commit()
+
+            await db.refresh(message)
+
+            return message
+
     async def get_history(
         self,
-        project_id: str,
+        project_id: int,
         session_id: str,
         limit: int = 20,
     ):
@@ -84,12 +110,17 @@ class MemoryService:
 
             result = await db.execute(
                 select(ChatSession).where(
-                    ChatSession.session_id == session_id,
-                    ChatSession.project_id == project_id,
+                    ChatSession.project_id
+                    == project_id,
+
+                    ChatSession.session_id
+                    == session_id,
                 )
             )
 
-            session = result.scalar_one_or_none()
+            session = (
+                result.scalar_one_or_none()
+            )
 
             if not session:
                 return []
@@ -97,12 +128,17 @@ class MemoryService:
             result = await db.execute(
                 select(ChatMessage)
                 .where(
-                    ChatMessage.session_db_id == session.id
+                    ChatMessage.session_db_id
+                    == session.id
                 )
-                .order_by(ChatMessage.id.asc())
+                .order_by(
+                    ChatMessage.id.asc()
+                )
             )
 
-            messages = result.scalars().all()
+            messages = (
+                result.scalars().all()
+            )
 
             return [
                 {
@@ -111,3 +147,18 @@ class MemoryService:
                 }
                 for m in messages[-limit:]
             ]
+
+    async def get_recent_messages(
+        self,
+        project_id: int,
+        session_id: str,
+        limit: int = 8,
+    ):
+
+        history = await self.get_history(
+            project_id=project_id,
+            session_id=session_id,
+            limit=limit,
+        )
+
+        return history

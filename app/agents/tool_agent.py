@@ -1,7 +1,7 @@
 import json
 
 from app.services.llm_service import LLMService
-from app.services.memory_service import MemoryService
+from app.services.chat_memory_service import ChatMemoryService
 
 from app.tools.retrieval_tool import (
     search_documents,
@@ -13,7 +13,7 @@ from app.tools.web_search_tool import (
     web_search_tool_definition,
 )
 
-memory_service = MemoryService()
+memory_service = ChatMemoryService()
 llm_service = LLMService()
 
 TOOLS = [

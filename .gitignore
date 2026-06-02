@@ -1,9 +1,19 @@
-venv/
-.venv/
-.env
+# uploads
+uploads/
+
+# python
 __pycache__/
 *.pyc
-.idea/
+
+# env
+.env
+.venv/
+venv/
+
+# vscode
 .vscode/
-.pytest_cache/
-.DS_Store
+
+# docker
+postgres_data/
+qdrant_storage/
+redis_data/

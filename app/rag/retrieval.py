@@ -69,3 +69,49 @@ class RetrievalService:
                 for r in results
             ]
         }
+    
+    async def retrieve(
+        self,
+        project_id: int,
+        question: str,
+        limit: int = 5
+    ):
+
+        query_embedding = (
+            self.embedding_service.embed_text(
+                question
+            )
+        )
+
+        results = (
+            self.qdrant_service.search(
+                query_embedding=query_embedding,
+                project_id=project_id,
+                limit=limit
+            )
+        )
+
+        documents = []
+
+        for result in results:
+
+            documents.append(
+                {
+                    "source":
+                        result.payload.get(
+                            "source",
+                            "unknown"
+                        ),
+
+                    "content":
+                        result.payload.get(
+                            "text",
+                            ""
+                        ),
+
+                    "score":
+                        float(result.score)
+                }
+            )
+
+        return documents

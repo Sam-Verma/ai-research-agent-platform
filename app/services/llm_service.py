@@ -20,19 +20,31 @@ class LLMService:
 
         self.model = settings.LLM_MODEL
 
-    def _format_messages(self, messages):
+    def _format_messages(
+        self,
+        messages
+    ):
 
-        return [
-            {
-                "role": (
-                    "user"
-                    if msg.type == "human"
-                    else msg.type
-                ),
-                "content": msg.content
-            }
-            for msg in messages
-        ]
+        formatted = []
+
+        for msg in messages:
+
+            if isinstance(msg, dict):
+                formatted.append(msg)
+
+            else:
+                formatted.append(
+                    {
+                        "role": (
+                            "user"
+                            if msg.type == "human"
+                            else msg.type
+                        ),
+                        "content": msg.content
+                    }
+                )
+
+        return formatted
 
     @retry(
         stop=stop_after_attempt(3),

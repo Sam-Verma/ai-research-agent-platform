@@ -67,6 +67,7 @@ Here is the research plan: {plan}
 Available Tools:
 - search_documents: searches internal documents.
 - web_search: searches the internet.
+- scrape_website: extracts detailed text from a specific URL.
 
 Use the tools to gather necessary context. Return the raw gathered context."""
             },
@@ -107,6 +108,20 @@ Use the tools to gather necessary context. Return the raw gathered context."""
                             "required": ["query"]
                         }
                     }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "scrape_website",
+                        "description": "Scrapes the content of a specific webpage URL to extract detailed information.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "url": {"type": "string", "description": "The full URL of the website to scrape."}
+                            },
+                            "required": ["url"]
+                        }
+                    }
                 }
             ],
             tool_choice="auto",
@@ -132,6 +147,11 @@ Use the tools to gather necessary context. Return the raw gathered context."""
                 elif func_name == "web_search":
                     result = web_search(query=args.get("query"))
                     research_context += f"\n\n[Web Search Result for '{args.get('query')}']:\n{result}"
+                
+                elif func_name == "scrape_website":
+                    from app.tools.scrape_tool import scrape_website
+                    result = scrape_website(url=args.get("url"))
+                    research_context += f"\n\n[Website Scrape Result for '{args.get('url')}']:\n{result}"
 
         # If no tools were used, the researcher might just have answered directly
         if not research_context and message.content:

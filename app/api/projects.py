@@ -115,3 +115,40 @@ async def delete_project(
     return {
         "message": "Project deleted"
     }
+
+from pydantic import BaseModel
+class CreateReportRequest(BaseModel):
+    title: str = "Research Report"
+    content: str
+
+from app.models.research import ProjectDocument, ResearchReport
+
+@router.get("/{project_id}/documents")
+async def list_project_documents(
+    project_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(ProjectDocument).where(ProjectDocument.project_id == project_id))
+    docs = result.scalars().all()
+    return [{"id": d.id, "filename": d.filename, "uploaded_at": d.uploaded_at} for d in docs]
+
+@router.get("/{project_id}/reports")
+async def list_project_reports(
+    project_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(ResearchReport).where(ResearchReport.project_id == project_id))
+    reports = result.scalars().all()
+    return [{"id": r.id, "title": r.title, "content": r.content, "created_at": r.created_at} for r in reports]
+
+@router.post("/{project_id}/reports")
+async def save_project_report(
+    project_id: int,
+    request: CreateReportRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    report = ResearchReport(project_id=project_id, title=request.title, content=request.content)
+    db.add(report)
+    await db.commit()
+    await db.refresh(report)
+    return {"id": report.id, "title": report.title, "created_at": report.created_at}

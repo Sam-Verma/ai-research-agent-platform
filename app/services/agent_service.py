@@ -15,9 +15,15 @@ from app.tools.web_search_tool import (
     web_search_tool_definition,
 )
 
+from app.tools.scrape_tool import (
+    scrape_website,
+    scrape_tool_definition,
+)
+
 TOOLS = [
     retrieval_tool_definition,
     web_search_tool_definition,
+    scrape_tool_definition,
 ]
 
 
@@ -116,6 +122,10 @@ Rules:
                 elif function_name == "web_search":
                     tool_result = web_search(
                         query=arguments.get("query")
+                    )
+                elif function_name == "scrape_website":
+                    tool_result = scrape_website(
+                        url=arguments.get("url")
                     )
 
                 messages.append(

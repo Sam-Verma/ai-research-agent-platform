@@ -54,6 +54,18 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
 
+  frontend:
+    build: ./frontend
+    container_name: research_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
 volumes:
   postgres_data:
   qdrant_data:

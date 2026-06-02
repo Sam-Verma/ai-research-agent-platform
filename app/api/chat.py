@@ -23,6 +23,16 @@ router = APIRouter(
 )
 
 
+@router.get("/history")
+async def get_history(
+    project_id: int,
+    session_id: str = "default-session",
+    memory_service = Depends(get_chat_memory_service)
+):
+    history = await memory_service.get_history(project_id, session_id, limit=50)
+    return {"messages": history}
+
+
 def get_chat_agent_service(
     llm_service = Depends(get_llm_service),
     memory_service = Depends(get_chat_memory_service),
@@ -55,13 +65,14 @@ async def stream_chat(
     request: ChatRequest,
     agent_service: ChatAgentService = Depends(get_chat_agent_service),
 ):
+    generator = await agent_service.execute(
+        project_id=request.project_id,
+        session_id=request.session_id,
+        question=request.question,
+        stream=True,
+    )
     return StreamingResponse(
-        agent_service.execute(
-            project_id=request.project_id,
-            session_id=request.session_id,
-            question=request.question,
-            stream=True,
-        ),
+        generator,
         media_type="text/event-stream",
     )
 

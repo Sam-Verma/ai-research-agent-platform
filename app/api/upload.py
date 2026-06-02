@@ -6,6 +6,7 @@ from fastapi import (
     UploadFile,
     File,
     Form,
+    Depends
 )
 
 from app.services.ingestion_service import IngestionPipeline
@@ -25,10 +26,15 @@ os.makedirs(
 )
 
 
+from app.db.session import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.research import ProjectDocument
+
 @router.post("/pdf")
 async def upload_pdf(
     project_id: int = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
 ):
 
     
@@ -42,6 +48,13 @@ async def upload_pdf(
         file_path=file_path,
         project_id=project_id
     )
+    
+    doc = ProjectDocument(
+        project_id=project_id,
+        filename=file.filename
+    )
+    db.add(doc)
+    await db.commit()
 
     return {
         "project_id": project_id,

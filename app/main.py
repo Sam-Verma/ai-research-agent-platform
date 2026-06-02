@@ -20,6 +20,7 @@ from app.api.projects import (
 )
 
 from app.api.dependencies import get_qdrant_service, get_llm_service
+from fastapi.middleware.cors import CORSMiddleware
 
 setup_logging()
 
@@ -45,6 +46,14 @@ app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, restrict this to frontend URL
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(health_router)

@@ -8,7 +8,7 @@ from fastapi import (
     Form,
 )
 
-from app.rag.ingestion import IngestionPipeline
+from app.services.ingestion_service import IngestionPipeline
 
 router = APIRouter(
     prefix="/upload",

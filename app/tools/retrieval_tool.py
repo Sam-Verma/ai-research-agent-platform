@@ -28,6 +28,7 @@ retrieval_tool_definition = {
 
 def search_documents(
     query: str,
+    project_id: int,
     limit: int = 5,
 ):
 
@@ -37,6 +38,7 @@ def search_documents(
 
     results = qdrant_service.search(
         query_embedding=query_embedding,
+        project_id=project_id,
         limit=limit,
     )
 

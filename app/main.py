@@ -10,11 +10,13 @@ from app.api.llm import router as llm_router
 from app.services.qdrant_service import QdrantService
 from app.api.upload import router as upload_router
 from app.api.rag import router as rag_router
-from app.api.agent import router as agent_router
 from app.api.stream import router as stream_router
 
-from app.api.tool_agent import (
-    router as tool_agent_router
+from app.api.chat import (
+    router as chat_router
+)
+from app.api.chat_stream import (
+    router as chat_stream_router
 )
 
 from app.api.projects import (
@@ -31,14 +33,13 @@ app = FastAPI(
 )
 
 app.include_router(health_router)
+app.include_router(projects_router)
 app.include_router(llm_router)
 app.include_router(upload_router)
+app.include_router(chat_router)
+app.include_router(chat_stream_router)
 app.include_router(rag_router)
-app.include_router(agent_router)
 app.include_router(stream_router)
-
-app.include_router(tool_agent_router)
-app.include_router(projects_router)
 
 
 @app.on_event("startup")

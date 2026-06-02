@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9d88a047-8475-487a-b34b-c63dacabcc97" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/api/chat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/agents/tool_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/agents/tool_agent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/rag.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/rag.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/tool_agent.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/upload.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/evaluation/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/ingestion/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/rag/ingestion.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/tools/retrieval_tool.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/tools/retrieval_tool.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/test_memory.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0000137519907015" />
+      <entry key="MS500" value="1.106721062419751" />
+      <entry key="S2" value="2.066676792306177" />
+      <entry key="S5" value="4.994647862710783" />
+      <entry key="S10" value="9.928084908972119" />
+      <entry key="S30" value="23.596488214065868" />
+      <entry key="S60" value="32.37929763165886" />
+      <entry key="M2" value="38.71856668704613" />
+      <entry key="M5" value="43.48827627015879" />
+      <entry key="M10" value="47.488084453701376" />
+      <entry key="M15" value="53.38195519400864" />
+      <entry key="M30" value="71.66950505638657" />
+      <entry key="H1" value="92.98904228348545" />
+      <entry key="H2" value="109.5570562730386" />
+      <entry key="H4" value="119.92701156167831" />
+      <entry key="D1" value="129.85807843874716" />
+      <entry key="W1" value="131.69067191498647" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="2.426530452388917E-162" />
+      <entry key="S10" value="2.1143257388321555E-81" />
+      <entry key="S30" value="2.1680728848193652E-27" />
+      <entry key="S60" value="8.080569271689529E-14" />
+      <entry key="M2" value="5.424354052818135E-7" />
+      <entry key="M5" value="0.00707344711930799" />
+      <entry key="M10" value="0.16785545266560015" />
+      <entry key="M15" value="0.482807551416901" />
+      <entry key="M30" value="1.389362194374418" />
+      <entry key="H1" value="2.357286333912669" />
+      <entry key="H2" value="3.0706464509334754" />
+      <entry key="H4" value="3.5046392132780864" />
+      <entry key="D1" value="3.9128241019531944" />
+      <entry key="W1" value="3.9874283355344127" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.007391075411030174" />
+      <entry key="MS500" value="0.38345172831527224" />
+      <entry key="S2" value="1.580886374268133" />
+      <entry key="S5" value="4.715774013389147" />
+      <entry key="S10" value="9.752354031793288" />
+      <entry key="S30" value="23.51208538356677" />
+      <entry key="S60" value="32.330393479587755" />
+      <entry key="M2" value="38.691947514099176" />
+      <entry key="M5" value="43.48407163202792" />
+      <entry key="M10" value="47.649839542705614" />
+      <entry key="M15" value="53.86019661467494" />
+      <entry key="M30" value="73.05587083732433" />
+      <entry key="H1" value="95.34444535151363" />
+      <entry key="H2" value="112.62661788913563" />
+      <entry key="H4" value="123.43106456249365" />
+      <entry key="D1" value="133.7707979490519" />
+      <entry key="W1" value="135.6780851286228" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 1,
+  "fromUser": false
+}]]></component>
+  <component name="ProjectId" id="3Ea1qNXJdKgTkIbULhW07Gb0RaL" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/home/ubuntu/ai_research_agent",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-c59985aa861c-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.24374.152" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9d88a047-8475-487a-b34b-c63dacabcc97" name="Changes" comment="" />
+      <created>1780402055967</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1780402055967</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

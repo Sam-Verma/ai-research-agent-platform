@@ -7,14 +7,6 @@ from pydantic import (
     BaseModel
 )
 
-from sqlalchemy.ext.asyncio import (
-    AsyncSession
-)
-
-from app.db.session import (
-    get_db
-)
-
 from app.services.retrieval_service import (
     RetrievalService
 )
@@ -22,7 +14,7 @@ from app.services.retrieval_service import (
 
 router = APIRouter(
     prefix="/rag",
-    tags=["rag"]
+    tags=["legacy-rag"]
 )
 
 retrieval_service = (

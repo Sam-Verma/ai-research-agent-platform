@@ -10,24 +10,26 @@ from app.services.chat_memory_service import (
 
 from app.tools.retrieval_tool import (
     search_documents,
-    retrieval_tool_definition,
 )
 
 from app.tools.web_search_tool import (
     web_search,
-    web_search_tool_definition,
 )
 
-memory_service = ChatMemoryService()
-llm_service = LLMService()
+from app.agents.tool_agent import (
+    TOOLS
+)
 
-TOOLS = [
-    retrieval_tool_definition,
-    web_search_tool_definition,
-]
+memory_service = (
+    ChatMemoryService()
+)
+
+llm_service = (
+    LLMService()
+)
 
 
-async def tool_agent(
+async def stream_tool_agent(
     project_id: int,
     session_id: str,
     question: str,
@@ -38,9 +40,11 @@ async def tool_agent(
         session_id=session_id,
     )
 
-    history = await memory_service.get_history(
-        project_id=project_id,
-        session_id=session_id,
+    history = await (
+        memory_service.get_history(
+            project_id=project_id,
+            session_id=session_id,
+        )
     )
 
     await memory_service.save_message(
@@ -56,23 +60,15 @@ async def tool_agent(
             "content": """
 You are an advanced AI research assistant.
 
-Available tools:
+Use project documents first.
 
-1. search_documents
-   - Search uploaded project documents
-   - Prefer this for project-specific knowledge
+Use web search for
+recent or missing information.
 
-2. web_search
-   - Search latest or external information
-   - Use for recent events or missing information
+Use multiple tools
+when necessary.
 
-Rules:
-- Prefer project documents first.
-- Use web search when needed.
-- Use multiple tools if necessary.
-- Never hallucinate.
-- Be concise but informative.
-- Cite retrieved evidence naturally.
+Never hallucinate.
             """.strip()
         }
     ]
@@ -95,15 +91,17 @@ Rules:
         )
     )
 
-    message = response.choices[0].message
-
-    tools_used = []
+    message = (
+        response.choices[0].message
+    )
 
     if message.tool_calls:
 
         messages.append(message)
 
-        for tool_call in message.tool_calls:
+        for tool_call in (
+            message.tool_calls
+        ):
 
             function_name = (
                 tool_call.function.name
@@ -113,14 +111,11 @@ Rules:
                 tool_call.function.arguments
             )
 
-            tools_used.append(
-                function_name
-            )
-
             tool_result = None
 
-            if function_name == (
-                "search_documents"
+            if (
+                function_name
+                == "search_documents"
             ):
 
                 tool_result = (
@@ -132,8 +127,9 @@ Rules:
                     )
                 )
 
-            elif function_name == (
-                "web_search"
+            elif (
+                function_name
+                == "web_search"
             ):
 
                 tool_result = (
@@ -155,48 +151,26 @@ Rules:
                 }
             )
 
-        final_response = await (
-            llm_service.client.chat.completions.create(
-                model=llm_service.model,
-                messages=messages,
-            )
+    full_response = ""
+
+    async for token in (
+        llm_service.stream_generate(
+            messages=messages,
+            temperature=0.3,
         )
+    ):
 
-        final_answer = (
-            final_response
-            .choices[0]
-            .message
-            .content
+        full_response += token
+
+        yield (
+            f"data: {token}\n\n"
         )
-
-        await memory_service.save_message(
-            project_id=project_id,
-            session_id=session_id,
-            role="assistant",
-            content=final_answer,
-        )
-
-        return {
-            "answer": final_answer,
-            "tools_used":
-                tools_used,
-        }
-
-    assistant_response = (
-        message.content
-    )
 
     await memory_service.save_message(
         project_id=project_id,
         session_id=session_id,
         role="assistant",
-        content=assistant_response,
+        content=full_response,
     )
 
-    return {
-        "answer":
-            assistant_response,
-
-        "tools_used":
-            [],
-    }
+    yield "data: [DONE]\n\n"

@@ -9,16 +9,19 @@ class LLMService:
 
     def __init__(self):
 
-        http_client = httpx.AsyncClient(
-        verify=False
+        self.http_client = httpx.AsyncClient(
+            verify=False
         )
         self.client = AsyncOpenAI(
             api_key=settings.LLM_API_KEY,
             base_url=settings.LLM_BASE_URL,
-            http_client=http_client
+            http_client=self.http_client
         )
 
         self.model = settings.LLM_MODEL
+        
+    async def close(self):
+        await self.http_client.aclose()
 
     def _format_messages(
         self,

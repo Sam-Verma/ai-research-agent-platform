@@ -2,9 +2,6 @@ from app.services.embedding_service import EmbeddingService
 from app.services.qdrant_service import QdrantService
 
 
-embedding_service = EmbeddingService()
-qdrant_service = QdrantService()
-
 retrieval_tool_definition = {
     "type": "function",
     "function": {
@@ -29,6 +26,8 @@ retrieval_tool_definition = {
 def search_documents(
     query: str,
     project_id: int,
+    embedding_service: EmbeddingService,
+    qdrant_service: QdrantService,
     limit: int = 5,
 ):
 

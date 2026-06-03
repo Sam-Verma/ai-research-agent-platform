@@ -90,6 +90,7 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
               </div>
               <button
                 type="button"
+                className="btn-project-delete"
                 onClick={() => {
                   if (window.confirm(`Delete project "${p.title}"? This will delete all documents and reports.`)) {
                     fetch(`http://127.0.0.1:8000/projects/${p.id}`, { method: 'DELETE' })
@@ -97,9 +98,6 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
                       .catch(err => alert('Delete failed'));
                   }
                 }}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--accent-cyan)', opacity: 0.6, transition: 'opacity 0.2s' }}
-                onMouseEnter={(e) => e.target.style.opacity = '1'}
-                onMouseLeave={(e) => e.target.style.opacity = '0.6'}
               >
                 <Trash2 size={16} />
               </button>
@@ -160,6 +158,7 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button
                   type="button"
+                  className="btn-download"
                   onClick={(e) => {
                     e.stopPropagation();
                     const url = `http://127.0.0.1:8000/projects/${activeProjectId}/reports/${r.id}/download`;
@@ -170,12 +169,12 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
                     link.click();
                     document.body.removeChild(link);
                   }}
-                  style={{ background: 'rgba(0, 240, 255, 0.08)', border: '1px solid var(--accent-cyan)', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}
                 >
                   <Download size={12} />
                 </button>
                 <button
                   type="button"
+                  className="btn-delete"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (window.confirm(`Delete report "${r.title}"?`)) {
@@ -184,7 +183,6 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
                         .catch(err => alert('Delete failed'));
                     }
                   }}
-                  style={{ background: 'rgba(255, 100, 100, 0.08)', border: '1px solid rgba(255, 100, 100, 0.4)', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px', color: 'rgba(255, 100, 100, 0.8)', display: 'flex', alignItems: 'center', fontSize: '11px' }}
                 >
                   <Trash2 size={12} />
                 </button>

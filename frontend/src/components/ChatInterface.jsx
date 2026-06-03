@@ -9,6 +9,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
   const [sessionId, setSessionId] = useState('default-session');
   const [sessions, setSessions] = useState([]);
   const [projectName, setProjectName] = useState('');
+  const [deepResearch, setDeepResearch] = useState(false);
   
   const messagesEndRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -132,7 +133,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
         const response = await fetch('http://127.0.0.1:8000/chat/research', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ project_id: projectId, session_id: sessionId, question: input })
+          body: JSON.stringify({ project_id: projectId, session_id: sessionId, question: input, mode: deepResearch ? 'deep' : 'standard' })
         });
         const data = await response.json();
         setMessages(prev => [...prev, { role: 'assistant', content: "Research complete. Sources and plan are available on the canvas." }]);
@@ -317,6 +318,15 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
           </button>
         </div>
       </div>
+
+      {chatMode === 'research' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', paddingLeft: '6px' }}>
+          <label style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input type="checkbox" checked={deepResearch} onChange={(e) => setDeepResearch(e.target.checked)} />
+            Deep Research
+          </label>
+        </div>
+      )}
 
       {/* Mode Selector */}
       <div className="mode-selector">

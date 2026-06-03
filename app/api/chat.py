@@ -87,6 +87,7 @@ async def research_chat(
         project_id=request.project_id,
         session_id=request.session_id,
         question=request.question,
+        mode=request.mode,
     )
 
 

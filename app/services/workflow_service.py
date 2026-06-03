@@ -57,24 +57,15 @@ class WorkflowService:
         project_id = state["project_id"]
         question = state["question"]
         plan = state.get("plan", "")
+        mode = state.get("mode", "")
+
+        system_msg = f"You are a researcher agent. Your goal is to gather information to answer the user's question.\nHere is the research plan: {plan}\n\nAvailable Tools:\n- search_documents: searches internal documents.\n- web_search: searches the internet.\n- scrape_website: extracts detailed text from a specific URL.\n\nUse the tools to gather necessary context. Return the raw gathered context."
+        if mode == 'deep':
+            system_msg = "DEEP RESEARCH MODE ENABLED. Be thorough: iterate on searches, query multiple angles, use both internal document search and web search, and prioritize primary sources. If appropriate, perform additional tool calls to expand coverage and return extensive context with clear citations.\n\n" + system_msg
 
         messages = [
-            {
-                "role": "system",
-                "content": f"""You are a researcher agent. Your goal is to gather information to answer the user's question.
-Here is the research plan: {plan}
-
-Available Tools:
-- search_documents: searches internal documents.
-- web_search: searches the internet.
-- scrape_website: extracts detailed text from a specific URL.
-
-Use the tools to gather necessary context. Return the raw gathered context."""
-            },
-            {
-                "role": "user",
-                "content": question
-            }
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": question}
         ]
 
         response = await self.llm_service.client.chat.completions.create(

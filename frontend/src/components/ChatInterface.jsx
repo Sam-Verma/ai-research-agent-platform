@@ -8,6 +8,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
   const [chatMode, setChatMode] = useState('standard'); // 'standard', 'stream', 'research'
   const [sessionId, setSessionId] = useState('default-session');
   const [sessions, setSessions] = useState([]);
+  const [projectName, setProjectName] = useState('');
   
   const messagesEndRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -19,6 +20,22 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
     if (projectId) {
       fetchSessions(projectId);
     }
+  }, [projectId]);
+
+  // fetch project metadata for header display
+  useEffect(() => {
+    if (!projectId) {
+      setProjectName('');
+      return;
+    }
+
+    let cancelled = false;
+    fetch(`http://127.0.0.1:8000/projects/${projectId}`)
+      .then(r => r.json())
+      .then(d => { if (!cancelled) setProjectName(d.name || ''); })
+      .catch(() => { if (!cancelled) setProjectName(''); });
+
+    return () => { cancelled = true; };
   }, [projectId]);
 
   // close dropdown on outside click
@@ -192,7 +209,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
       <div className="chat-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <div>
           <h2 style={{ fontSize: '14px', letterSpacing: '1px', color: 'var(--text-muted)', margin: 0 }}>
-            AGENT NEURO-LINK
+            {projectName || 'AGENT NEURO-LINK'}
           </h2>
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <span style={{ color: 'var(--accent-cyan)', fontSize: '12px' }}>Session:</span>

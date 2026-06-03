@@ -41,12 +41,17 @@ def search_documents(
         limit=limit,
     )
 
-    contexts = []
+    documents = []
 
     for r in results:
+        text = r.payload.get("text", "")
+        source = r.payload.get("source", "unknown source")
 
-        contexts.append(
-            r.payload["text"]
-        )
+        documents.append({
+            "id": getattr(r, "id", None),
+            "text": text,
+            "source": source,
+            "snippet": text[:800],
+        })
 
-    return "\n\n".join(contexts)
+    return documents

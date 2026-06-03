@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LayoutDashboard, FileText, Database, BookOpen, Plus, UploadCloud } from 'lucide-react';
+import { LayoutDashboard, FileText, Database, BookOpen, Plus, UploadCloud, Download } from 'lucide-react';
 
 export default function Sidebar({ projects, activeProjectId, setActiveProjectId, refreshProjects, onLoadReport, refreshTrigger }) {
   const [newProjectTitle, setNewProjectTitle] = useState('');
@@ -133,9 +133,27 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
           <h3 style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '16px', marginBottom: '16px', letterSpacing: '1px' }}>SAVED REPORTS</h3>
           
           {reports.map(r => (
-            <div key={`rep-${r.id}`} onClick={() => onLoadReport({ answer: r.content })} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 16px', cursor: 'pointer', color: 'var(--text-muted)' }}>
-              <FileText size={16} color="var(--accent-purple)" />
-              <span style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.title} ({new Date(r.created_at).toLocaleDateString()})</span>
+            <div key={`rep-${r.id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '4px 16px', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              <div onClick={() => onLoadReport({ answer: r.content })} style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                <FileText size={16} color="var(--accent-purple)" />
+                <span style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.title} ({new Date(r.created_at).toLocaleDateString()})</span>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const url = `http://127.0.0.1:8000/projects/${activeProjectId}/reports/${r.id}/download`;
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.target = '_blank';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                style={{ background: 'rgba(0, 240, 255, 0.08)', border: '1px solid var(--accent-cyan)', borderRadius: '999px', cursor: 'pointer', padding: '6px 10px', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}
+              >
+                <Download size={14} /> Download
+              </button>
             </div>
           ))}
         </div>

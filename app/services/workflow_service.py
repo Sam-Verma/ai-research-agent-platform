@@ -129,6 +129,7 @@ Use the tools to gather necessary context. Return the raw gathered context."""
 
         message = response.choices[0].message
         research_context = ""
+        citations = []
 
         if message.tool_calls:
             for tool_call in message.tool_calls:
@@ -136,46 +137,90 @@ Use the tools to gather necessary context. Return the raw gathered context."""
                 args = json.loads(tool_call.function.arguments)
                 
                 if func_name == "search_documents":
-                    result = search_documents(
+                    results = search_documents(
                         query=args.get("query"),
                         project_id=project_id,
                         embedding_service=self.embedding_service,
                         qdrant_service=self.qdrant_service
                     )
-                    research_context += f"\n\n[Document Search Result for '{args.get('query')}']:\n{result}"
+                    for idx, item in enumerate(results, start=1):
+                        research_context += (
+                            f"\n\n[Document Search Result {idx} from {item['source']}]:\n{item['snippet']}"
+                        )
+                        citations.append({
+                            "type": "document",
+                            "source": item["source"],
+                            "snippet": item["snippet"],
+                            "query": args.get("query"),
+                            "id": item.get("id"),
+                        })
                 
                 elif func_name == "web_search":
-                    result = web_search(query=args.get("query"))
-                    research_context += f"\n\n[Web Search Result for '{args.get('query')}']:\n{result}"
+                    results = web_search(query=args.get("query"))
+                    for idx, result in enumerate(results, start=1):
+                        research_context += (
+                            f"\n\n[Web Search Result {idx} - {result.get('title', 'online source')}]:\n{result.get('body', '')[:800]}"
+                        )
+                        citations.append({
+                            "type": "web",
+                            "title": result.get("title", "Web Source"),
+                            "link": result.get("link"),
+                            "snippet": result.get("body", "")[:200],
+                            "query": args.get("query"),
+                        })
                 
                 elif func_name == "scrape_website":
                     from app.tools.scrape_tool import scrape_website
                     result = scrape_website(url=args.get("url"))
-                    research_context += f"\n\n[Website Scrape Result for '{args.get('url')}']:\n{result}"
+                    research_context += (
+                        f"\n\n[Website Scrape Result for {args.get('url')}]:\n{result[:800]}"
+                    )
+                    citations.append({
+                        "type": "web",
+                        "title": args.get("url"),
+                        "link": args.get("url"),
+                        "snippet": result[:200],
+                        "query": args.get("url"),
+                    })
 
         # If no tools were used, the researcher might just have answered directly
         if not research_context and message.content:
             research_context = message.content
 
-        return {"research": research_context}
+        return {"research": research_context, "citations": citations}
 
     async def summarizer_node(self, state: ResearchState) -> ResearchState:
         question = state["question"]
         research = state.get("research", "")
+        citations = state.get("citations", [])
+
+        source_text = ""
+        if citations:
+            source_lines = []
+            for idx, source in enumerate(citations, start=1):
+                if source["type"] == "document":
+                    source_lines.append(f"[{idx}] Document source: {source['source']}\nSnippet: {source['snippet']}")
+                else:
+                    source_lines.append(f"[{idx}] Web source: {source.get('title', source.get('link', 'unknown'))} ({source.get('link', source.get('title'))})\nSnippet: {source['snippet']}")
+            source_text = "\n\n".join(source_lines)
+
+        prompt_content = f"Original Question: {question}\n\nResearch Context: {research}"
+        if source_text:
+            prompt_content += f"\n\nSources:\n{source_text}"
 
         messages = [
             {
                 "role": "system",
-                "content": "You are a summarization agent. Create a concise, well-formatted final answer based on the provided research context."
+                "content": "You are a summarization agent. Create a concise, well-formatted final answer based on the provided research context. Clearly cite sources using numbered references like [1], [2], and include a Sources section at the end."
             },
             {
                 "role": "user",
-                "content": f"Original Question: {question}\n\nResearch Context: {research}"
+                "content": prompt_content
             }
         ]
 
         response = await self.llm_service.generate(messages=messages)
-        return {"answer": response}
+        return {"answer": response, "citations": citations}
 
     async def execute(self, project_id: int, session_id: str, question: str) -> dict:
         await self.memory_service.get_or_create_session(
@@ -203,7 +248,8 @@ Use the tools to gather necessary context. Return the raw gathered context."""
             "messages": history,
             "plan": "",
             "research": "",
-            "answer": ""
+            "answer": "",
+            "citations": [],
         }
 
         # Run the workflow
@@ -221,5 +267,6 @@ Use the tools to gather necessary context. Return the raw gathered context."""
         return {
             "answer": answer,
             "plan": final_state.get("plan"),
-            "research": final_state.get("research")
+            "research": final_state.get("research"),
+            "citations": final_state.get("citations", []),
         }

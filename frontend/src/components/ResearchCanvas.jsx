@@ -1,9 +1,28 @@
 import React, { useState } from 'react';
 import { marked } from 'marked';
-import { FileCode, Settings, Save } from 'lucide-react';
+import { FileCode, Save } from 'lucide-react';
 
 export default function ResearchCanvas({ research, projectId, onReportSaved }) {
   const [saving, setSaving] = useState(false);
+
+  const getSavedContent = () => {
+    if (!research) return '';
+
+    let content = research.answer || '';
+
+    if (research.citations?.length) {
+      content += '\n\nSources:\n';
+      content += research.citations.map((citation, idx) => {
+        if (citation.type === 'document') {
+          return `${idx + 1}. ${citation.source} - ${citation.snippet}`;
+        }
+
+        return `${idx + 1}. ${citation.title || citation.link} - ${citation.snippet}`;
+      }).join('\n');
+    }
+
+    return content;
+  };
 
   const handleSave = async () => {
     if (!research || !research.answer || !projectId || saving) return;
@@ -14,7 +33,7 @@ export default function ResearchCanvas({ research, projectId, onReportSaved }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           title: "Research Report " + new Date().toLocaleDateString(), 
-          content: research.answer 
+          content: getSavedContent(),
         })
       });
       alert('Report saved to project!');
@@ -24,6 +43,38 @@ export default function ResearchCanvas({ research, projectId, onReportSaved }) {
     } finally {
       setSaving(false);
     }
+  };
+
+  const renderCitations = () => {
+    if (!research?.citations?.length) return null;
+
+    return (
+      <div style={{ marginTop: '24px' }}>
+        <h3 style={{ color: 'var(--text-muted)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>Sources</h3>
+        <div style={{ display: 'grid', gap: '12px', marginTop: '12px' }}>
+          {research.citations.map((citation, idx) => (
+            <div key={idx} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-main)', marginBottom: '6px' }}><strong>[{idx + 1}]</strong> {citation.type === 'document' ? citation.source : citation.title || citation.link}</div>
+              {citation.link && citation.type !== 'document' ? (
+                <a href={citation.link} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-cyan)', fontSize: '12px', wordBreak: 'break-all' }}>{citation.link}</a>
+              ) : null}
+              <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-muted)', whiteSpace: 'pre-wrap' }}>{citation.snippet}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPlan = () => {
+    if (!research?.plan) return null;
+
+    return (
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{ color: 'var(--text-muted)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>Research Plan</h3>
+        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: marked.parse(research.plan) }} />
+      </div>
+    );
   };
 
   return (
@@ -40,10 +91,11 @@ export default function ResearchCanvas({ research, projectId, onReportSaved }) {
       
       <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
         {research ? (
-          <div 
-            className="markdown-body" 
-            dangerouslySetInnerHTML={{ __html: marked.parse(research.answer || '') }}
-          />
+          <>
+            {renderPlan()}
+            <div className="markdown-body" dangerouslySetInnerHTML={{ __html: marked.parse(research.answer || '') }} />
+            {renderCitations()}
+          </>
         ) : (
           <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '40px' }}>
             Submit a query to generate a structured research report on this canvas.

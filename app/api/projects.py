@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+import io
 
 from app.db.session import get_db
 from app.models.research import ResearchProject
@@ -140,6 +142,29 @@ async def list_project_reports(
     result = await db.execute(select(ResearchReport).where(ResearchReport.project_id == project_id))
     reports = result.scalars().all()
     return [{"id": r.id, "title": r.title, "content": r.content, "created_at": r.created_at} for r in reports]
+
+@router.get("/{project_id}/reports/{report_id}/download")
+async def download_project_report(
+    project_id: int,
+    report_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(ResearchReport).where(
+            ResearchReport.project_id == project_id,
+            ResearchReport.id == report_id,
+        )
+    )
+    report = result.scalar_one_or_none()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    filename = f"{report.title or 'report'}.txt"
+    content_bytes = (report.content or '').encode('utf-8')
+    headers = {
+        'Content-Disposition': f'attachment; filename="{filename}"'
+    }
+    return StreamingResponse(io.BytesIO(content_bytes), media_type='text/plain', headers=headers)
 
 @router.post("/{project_id}/reports")
 async def save_project_report(

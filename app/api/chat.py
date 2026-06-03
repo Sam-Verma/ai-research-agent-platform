@@ -87,3 +87,12 @@ async def research_chat(
         session_id=request.session_id,
         question=request.question,
     )
+
+
+@router.get("/sessions")
+async def get_sessions(
+    project_id: int,
+    memory_service = Depends(get_chat_memory_service),
+):
+    sessions = await memory_service.list_sessions(project_id)
+    return {"sessions": sessions}

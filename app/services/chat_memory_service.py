@@ -162,3 +162,26 @@ class ChatMemoryService:
         )
 
         return history
+
+    async def list_sessions(
+        self,
+        project_id: int,
+    ):
+
+        async with AsyncSessionLocal() as db:
+
+            result = await db.execute(
+                select(ChatSession).where(
+                    ChatSession.project_id == project_id,
+                )
+            )
+
+            sessions = result.scalars().all()
+
+            return [
+                {
+                    "session_id": session.session_id,
+                    "project_id": session.project_id,
+                }
+                for session in sessions
+            ]

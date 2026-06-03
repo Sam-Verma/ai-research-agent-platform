@@ -7,14 +7,13 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
   const [loading, setLoading] = useState(false);
   const [chatMode, setChatMode] = useState('standard'); // 'standard', 'stream', 'research'
   const [sessionId, setSessionId] = useState('default-session');
+  const [sessions, setSessions] = useState([]);
   
   const messagesEndRef = useRef(null);
 
-  // Generate a new session ID when project changes or component mounts
   useEffect(() => {
     if (projectId) {
-      setSessionId('default-session');
-      fetchHistory(projectId, 'default-session');
+      fetchSessions(projectId);
     }
   }, [projectId]);
 
@@ -30,9 +29,36 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
     }
   };
 
+  const fetchSessions = async (projId) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/chat/sessions?project_id=${projId}`);
+      const data = await res.json();
+      const ids = data.sessions?.map(s => s.session_id) || [];
+      // Always ensure 'default-session' is available
+      const allSessions = ['default-session', ...ids.filter(id => id !== 'default-session')];
+      setSessions(allSessions);
+      
+      // Load history for current session or default
+      if (sessionId && (sessionId === 'default-session' || ids.includes(sessionId))) {
+        fetchHistory(projId, sessionId);
+      } else {
+        setSessionId('default-session');
+        fetchHistory(projId, 'default-session');
+      }
+    } catch (err) {
+      console.error('Failed to fetch sessions', err);
+    }
+  };
+
+
   const handleNewSession = () => {
     const newSessId = `sess-${Date.now()}`;
     setSessionId(newSessId);
+    // Add new session to list if not already there
+    setSessions(prev => {
+      if (prev.includes(newSessId)) return prev;
+      return [newSessId, ...prev];
+    });
     setMessages([]);
     onResearchComplete(null);
   };
@@ -62,8 +88,8 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
           body: JSON.stringify({ project_id: projectId, session_id: sessionId, question: input })
         });
         const data = await response.json();
-        setMessages(prev => [...prev, { role: 'assistant', content: "Research complete. I've compiled the final report on the canvas." }]);
-        onResearchComplete({ plan: data.plan, research: data.research, answer: data.answer });
+        setMessages(prev => [...prev, { role: 'assistant', content: "Research complete. Sources and plan are available on the canvas." }]);
+        onResearchComplete({ plan: data.plan, research: data.research, answer: data.answer, citations: data.citations || [] });
       
       } else if (chatMode === 'standard') {
         const response = await fetch('http://127.0.0.1:8000/chat/', {
@@ -133,10 +159,29 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
 
   return (
     <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ padding: '20px', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '14px', letterSpacing: '1px', color: 'var(--text-muted)' }}>
-          AGENT NEURO-LINK <span style={{ color: 'var(--accent-cyan)', fontSize: '12px' }}>({sessionId.substring(0,8)}...)</span>
-        </h2>
+      <div style={{ position: 'sticky', top: 0, zIndex: 20, padding: '20px', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', background: 'rgba(3, 8, 20, 0.94)', backdropFilter: 'blur(14px)' }}>
+        <div>
+          <h2 style={{ fontSize: '14px', letterSpacing: '1px', color: 'var(--text-muted)', margin: 0 }}>
+            AGENT NEURO-LINK
+          </h2>
+          <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--accent-cyan)', fontSize: '12px' }}>Session:</span>
+            <select
+              value={sessionId}
+              onChange={(e) => {
+                setSessionId(e.target.value);
+                fetchHistory(projectId, e.target.value);
+              }}
+              style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid var(--border-glass)', borderRadius: '999px', color: '#fff', padding: '8px 14px', minWidth: '220px' }}
+            >
+              <option value="default-session">default-session</option>
+              {sessions.filter(id => id !== 'default-session').map(id => (
+                <option key={id} value={id}>{id}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={handleNewSession}
@@ -148,7 +193,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
       </div>
 
       {/* Mode Selector */}
-      <div style={{ padding: '10px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.2)' }}>
+      <div style={{ position: 'sticky', top: '88px', zIndex: 18, padding: '10px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '10px', background: 'rgba(3, 8, 20, 0.94)', backdropFilter: 'blur(14px)' }}>
         {modes.map(mode => (
           <button
             key={mode.id}

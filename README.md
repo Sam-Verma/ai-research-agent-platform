@@ -116,7 +116,7 @@ LLM
 * [x] Agentic RAG
 * [x] Context-aware retrieval
 * [x] Multi-step reasoning
-* [ ] Deep research mode
+* [x] Deep research mode — implemented (frontend toggle + backend passthrough)
 
 ### Document Intelligence
 
@@ -366,6 +366,8 @@ uvicorn app.main:app --reload
 * Streaming responses
 * Research dashboard
 * Interactive reports
+* [x] Session management: custom session dropdown with keyboard navigation and ARIA (frontend)
+* [x] Report download & delete: UI buttons and backend endpoints
 
 ### Production Readiness
 

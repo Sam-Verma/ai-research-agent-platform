@@ -12,6 +12,8 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
   const messagesEndRef = useRef(null);
   const dropdownRef = useRef(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const menuRef = useRef(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
 
   useEffect(() => {
     if (projectId) {
@@ -28,6 +30,22 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
     document.addEventListener('mousedown', onDocClick);
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
+
+  // manage focus when opening menu and when focusedIndex changes
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    // default focused index -> currently selected session or first
+    const idx = Math.max(0, sessions.indexOf(sessionId));
+    setFocusedIndex(idx >= 0 ? idx : 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dropdownOpen]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const id = `session-item-${focusedIndex}`;
+    const el = menuRef.current?.querySelector(`#${id}`);
+    if (el) el.focus();
+  }, [focusedIndex, dropdownOpen]);
 
   const fetchHistory = async (projId, sessId) => {
     try {
@@ -182,21 +200,70 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
             <div className="session-dropdown" ref={dropdownRef}>
               <div
                 role="button"
+                aria-haspopup="listbox"
+                aria-expanded={dropdownOpen}
+                aria-controls="session-menu"
                 tabIndex={0}
                 className="session-dropdown-toggle"
                 onClick={() => setDropdownOpen(o => !o)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setDropdownOpen(o => !o); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setDropdownOpen(o => !o);
+                    return;
+                  }
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setDropdownOpen(true);
+                    setFocusedIndex(0);
+                    return;
+                  }
+                  if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setDropdownOpen(true);
+                    setFocusedIndex(Math.max(0, sessions.length - 1));
+                    return;
+                  }
+                }}
               >
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '220px' }}>{sessionId}</div>
                 <ChevronDown size={14} />
               </div>
 
               {dropdownOpen && (
-                <div className="session-dropdown-menu">
-                  {[...sessions].map((id) => (
+                <div className="session-dropdown-menu" id="session-menu" role="listbox" ref={menuRef} aria-activedescendant={`session-item-${focusedIndex}`}>
+                  {[...sessions].map((id, idx) => (
                     <div key={id}
+                      id={`session-item-${idx}`}
+                      role="option"
+                      tabIndex={focusedIndex === idx ? 0 : -1}
+                      aria-selected={id === sessionId}
                       className={"session-dropdown-item" + (id === sessionId ? ' active' : '')}
                       onClick={() => { setSessionId(id); fetchHistory(projectId, id); setDropdownOpen(false); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSessionId(id);
+                          fetchHistory(projectId, id);
+                          setDropdownOpen(false);
+                          return;
+                        }
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          setFocusedIndex(i => Math.min(sessions.length - 1, i + 1));
+                          return;
+                        }
+                        if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          setFocusedIndex(i => Math.max(0, i - 1));
+                          return;
+                        }
+                        if (e.key === 'Escape') {
+                          e.preventDefault();
+                          setDropdownOpen(false);
+                          return;
+                        }
+                      }}
                     >{id}</div>
                   ))}
                 </div>

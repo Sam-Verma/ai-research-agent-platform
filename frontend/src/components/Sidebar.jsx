@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LayoutDashboard, FileText, Database, BookOpen, Plus, UploadCloud, Download } from 'lucide-react';
+import { LayoutDashboard, FileText, Database, BookOpen, Plus, UploadCloud, Download, Trash2 } from 'lucide-react';
 
 export default function Sidebar({ projects, activeProjectId, setActiveProjectId, refreshProjects, onLoadReport, refreshTrigger }) {
   const [newProjectTitle, setNewProjectTitle] = useState('');
@@ -69,21 +69,40 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
           {projects.map(p => (
             <div 
               key={p.id}
-              onClick={() => setActiveProjectId(p.id)}
               style={{
                 padding: '12px 16px',
                 background: activeProjectId === p.id ? 'rgba(176, 38, 255, 0.15)' : 'transparent',
                 border: activeProjectId === p.id ? '1px solid var(--accent-purple)' : '1px solid transparent',
                 borderRadius: '12px',
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'space-between',
                 gap: '12px',
                 color: activeProjectId === p.id ? '#fff' : 'var(--text-muted)'
               }}
             >
-              <Database size={18} color={activeProjectId === p.id ? 'var(--accent-purple)' : 'var(--text-muted)'} />
-              <span style={{ fontSize: '14px', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</span>
+              <div
+                onClick={() => setActiveProjectId(p.id)}
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}
+              >
+                <Database size={18} color={activeProjectId === p.id ? 'var(--accent-purple)' : 'var(--text-muted)'} />
+                <span style={{ fontSize: '14px', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm(`Delete project "${p.title}"? This will delete all documents and reports.`)) {
+                    fetch(`http://127.0.0.1:8000/projects/${p.id}`, { method: 'DELETE' })
+                      .then(() => { refreshProjects(); })
+                      .catch(err => alert('Delete failed'));
+                  }
+                }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--accent-cyan)', opacity: 0.6, transition: 'opacity 0.2s' }}
+                onMouseEnter={(e) => e.target.style.opacity = '1'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.6'}
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ))}
         </div>
@@ -138,22 +157,38 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
                 <FileText size={16} color="var(--accent-purple)" />
                 <span style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.title} ({new Date(r.created_at).toLocaleDateString()})</span>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const url = `http://127.0.0.1:8000/projects/${activeProjectId}/reports/${r.id}/download`;
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.target = '_blank';
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-                style={{ background: 'rgba(0, 240, 255, 0.08)', border: '1px solid var(--accent-cyan)', borderRadius: '999px', cursor: 'pointer', padding: '6px 10px', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}
-              >
-                <Download size={14} /> Download
-              </button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const url = `http://127.0.0.1:8000/projects/${activeProjectId}/reports/${r.id}/download`;
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  style={{ background: 'rgba(0, 240, 255, 0.08)', border: '1px solid var(--accent-cyan)', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}
+                >
+                  <Download size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Delete report "${r.title}"?`)) {
+                      fetch(`http://127.0.0.1:8000/projects/${activeProjectId}/reports/${r.id}`, { method: 'DELETE' })
+                        .then(() => fetchProjectData())
+                        .catch(err => alert('Delete failed'));
+                    }
+                  }}
+                  style={{ background: 'rgba(255, 100, 100, 0.08)', border: '1px solid rgba(255, 100, 100, 0.4)', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px', color: 'rgba(255, 100, 100, 0.8)', display: 'flex', alignItems: 'center', fontSize: '11px' }}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
             </div>
           ))}
         </div>

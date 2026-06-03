@@ -177,3 +177,24 @@ async def save_project_report(
     await db.commit()
     await db.refresh(report)
     return {"id": report.id, "title": report.title, "created_at": report.created_at}
+
+@router.delete("/{project_id}/reports/{report_id}")
+async def delete_report(
+    project_id: int,
+    report_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(ResearchReport).where(
+            ResearchReport.project_id == project_id,
+            ResearchReport.id == report_id,
+        )
+    )
+    report = result.scalar_one_or_none()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    await db.delete(report)
+    await db.commit()
+
+    return {"message": "Report deleted successfully"}

@@ -185,3 +185,28 @@ class ChatMemoryService:
                 }
                 for session in sessions
             ]
+
+    async def delete_session(
+        self,
+        project_id: int,
+        session_id: str,
+    ):
+
+        async with AsyncSessionLocal() as db:
+
+            result = await db.execute(
+                select(ChatSession).where(
+                    ChatSession.project_id == project_id,
+                    ChatSession.session_id == session_id,
+                )
+            )
+
+            session = result.scalar_one_or_none()
+
+            if not session:
+                return False
+
+            await db.delete(session)
+            await db.commit()
+
+            return True

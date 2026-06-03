@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, Zap, MessageSquare, Plus } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, Zap, MessageSquare, Plus, Trash2 } from 'lucide-react';
 
 export default function ChatInterface({ projectId, onResearchComplete }) {
   const [messages, setMessages] = useState([]);
@@ -183,6 +183,24 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
+          {sessionId !== 'default-session' && (
+            <button 
+              onClick={() => {
+                if (window.confirm(`Delete session "${sessionId}"? Chat history will be lost.`)) {
+                  fetch(`http://127.0.0.1:8000/chat/sessions?project_id=${projectId}&session_id=${sessionId}`, { method: 'DELETE' })
+                    .then(() => {
+                      setSessionId('default-session');
+                      setSessions(prev => prev.filter(id => id !== sessionId));
+                      fetchHistory(projectId, 'default-session');
+                    })
+                    .catch(err => alert('Delete failed'));
+                }
+              }}
+              style={{ background: 'rgba(255, 100, 100, 0.1)', border: '1px solid rgba(255, 100, 100, 0.3)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', color: 'rgba(255, 100, 100, 0.8)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+          )}
           <button 
             onClick={handleNewSession}
             style={{ background: 'transparent', border: '1px solid var(--border-glass)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}

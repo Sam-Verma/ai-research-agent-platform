@@ -1,6 +1,7 @@
 from fastapi import (
     APIRouter,
     Depends,
+    HTTPException,
 )
 from fastapi.responses import StreamingResponse
 
@@ -96,3 +97,15 @@ async def get_sessions(
 ):
     sessions = await memory_service.list_sessions(project_id)
     return {"sessions": sessions}
+
+
+@router.delete("/sessions")
+async def delete_session(
+    project_id: int,
+    session_id: str,
+    memory_service = Depends(get_chat_memory_service),
+):
+    deleted = await memory_service.delete_session(project_id, session_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {"message": "Session deleted successfully"}

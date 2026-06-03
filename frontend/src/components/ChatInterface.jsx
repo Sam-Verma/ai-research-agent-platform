@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, Zap, MessageSquare, Plus, Trash2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, Zap, MessageSquare, Plus, Trash2, ChevronDown } from 'lucide-react';
 
 export default function ChatInterface({ projectId, onResearchComplete }) {
   const [messages, setMessages] = useState([]);
@@ -10,12 +10,24 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
   const [sessions, setSessions] = useState([]);
   
   const messagesEndRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (projectId) {
       fetchSessions(projectId);
     }
   }, [projectId]);
+
+  // close dropdown on outside click
+  useEffect(() => {
+    function onDocClick(e) {
+      if (!dropdownRef.current) return;
+      if (!dropdownRef.current.contains(e.target)) setDropdownOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
 
   const fetchHistory = async (projId, sessId) => {
     try {
@@ -159,32 +171,45 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
 
   return (
     <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 20, padding: '20px', borderBottom: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', background: 'rgba(3, 8, 20, 0.94)', backdropFilter: 'blur(14px)' }}>
-        <div>
+      <div className="chat-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <div>
           <h2 style={{ fontSize: '14px', letterSpacing: '1px', color: 'var(--text-muted)', margin: 0 }}>
             AGENT NEURO-LINK
           </h2>
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <span style={{ color: 'var(--accent-cyan)', fontSize: '12px' }}>Session:</span>
-            <select
-              value={sessionId}
-              onChange={(e) => {
-                setSessionId(e.target.value);
-                fetchHistory(projectId, e.target.value);
-              }}
-              style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid var(--border-glass)', borderRadius: '999px', color: '#fff', padding: '8px 14px', minWidth: '220px' }}
-            >
-              <option value="default-session">default-session</option>
-              {sessions.filter(id => id !== 'default-session').map(id => (
-                <option key={id} value={id}>{id}</option>
-              ))}
-            </select>
+
+            <div className="session-dropdown" ref={dropdownRef}>
+              <div
+                role="button"
+                tabIndex={0}
+                className="session-dropdown-toggle"
+                onClick={() => setDropdownOpen(o => !o)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setDropdownOpen(o => !o); }}
+              >
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '220px' }}>{sessionId}</div>
+                <ChevronDown size={14} />
+              </div>
+
+              {dropdownOpen && (
+                <div className="session-dropdown-menu">
+                  {[...sessions].map((id) => (
+                    <div key={id}
+                      className={"session-dropdown-item" + (id === sessionId ? ' active' : '')}
+                      onClick={() => { setSessionId(id); fetchHistory(projectId, id); setDropdownOpen(false); }}
+                    >{id}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
           {sessionId !== 'default-session' && (
             <button 
+              className="btn-session-delete"
               onClick={() => {
                 if (window.confirm(`Delete session "${sessionId}"? Chat history will be lost.`)) {
                   fetch(`http://127.0.0.1:8000/chat/sessions?project_id=${projectId}&session_id=${sessionId}`, { method: 'DELETE' })
@@ -196,7 +221,6 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
                     .catch(err => alert('Delete failed'));
                 }
               }}
-              style={{ background: 'rgba(255, 100, 100, 0.1)', border: '1px solid rgba(255, 100, 100, 0.3)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', color: 'rgba(255, 100, 100, 0.8)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}
             >
               <Trash2 size={14} /> Delete
             </button>
@@ -211,7 +235,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
       </div>
 
       {/* Mode Selector */}
-      <div style={{ position: 'sticky', top: '88px', zIndex: 18, padding: '10px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '10px', background: 'rgba(3, 8, 20, 0.94)', backdropFilter: 'blur(14px)' }}>
+      <div className="mode-selector">
         {modes.map(mode => (
           <button
             key={mode.id}

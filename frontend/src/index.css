@@ -97,3 +97,127 @@ h1, h2, h3, h4, h5, h6 {
   font-family: monospace;
   color: var(--accent-cyan);
 }
+
+/* Session selector and action buttons */
+.session-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.2));
+  border: 1px solid var(--border-glass);
+  padding: 8px 14px;
+  color: var(--text-main);
+  border-radius: 999px;
+  min-width: 200px;
+  transition: box-shadow 160ms ease, transform 120ms ease;
+}
+.session-select:focus {
+  outline: none;
+  box-shadow: 0 6px 18px rgba(176,38,255,0.12);
+  transform: translateY(-1px);
+}
+
+.btn-download, .btn-delete, .btn-project-delete, .btn-session-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-download {
+  background: rgba(0,240,255,0.06);
+  border: 1px solid rgba(0,240,255,0.12);
+  color: var(--accent-cyan);
+}
+
+.btn-delete, .btn-project-delete, .btn-session-delete {
+  background: rgba(255,100,100,0.06);
+  border: 1px solid rgba(255,100,100,0.12);
+  color: rgba(255,100,100,0.9);
+}
+
+.btn-download:hover, .btn-delete:hover, .btn-project-delete:hover, .btn-session-delete:hover {
+  transform: translateY(-2px);
+}
+
+/* Chat header and mode selector styling */
+.chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-glass);
+  background: linear-gradient(180deg, rgba(3,8,20,0.96), rgba(3,8,20,0.9));
+  backdrop-filter: blur(12px);
+}
+
+.mode-selector {
+  position: sticky;
+  top: 76px;
+  z-index: 25;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(3,8,20,0.94), rgba(3,8,20,0.9));
+  backdrop-filter: blur(12px);
+}
+
+/* Improve select dropdown arrow visibility for light/dark */
+.session-select {
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-main) 50%), linear-gradient(135deg, var(--text-main) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+}
+
+/* Custom dropdown replacement for select to allow styled options */
+.session-dropdown {
+  position: relative;
+  display: inline-block;
+  min-width: 220px;
+}
+.session-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18));
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  cursor: pointer;
+}
+.session-dropdown-toggle:hover {
+  box-shadow: 0 8px 20px rgba(176,38,255,0.08);
+}
+.session-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(3,8,20,0.98), rgba(3,8,20,0.96));
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  max-height: 240px;
+  overflow: auto;
+  z-index: 60;
+}
+.session-dropdown-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+}
+.session-dropdown-item:hover {
+  background: rgba(176,38,255,0.08);
+}
+.session-dropdown-item.active {
+  background: rgba(176,38,255,0.14);
+}
+

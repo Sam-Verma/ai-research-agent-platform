@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { marked } from 'marked';
 import { FileCode, Save } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function ResearchCanvas({ research, projectId, onReportSaved }) {
   const [saving, setSaving] = useState(false);
@@ -28,7 +29,7 @@ export default function ResearchCanvas({ research, projectId, onReportSaved }) {
     if (!research || !research.answer || !projectId || saving) return;
     setSaving(true);
     try {
-      await fetch(`http://127.0.0.1:8000/projects/${projectId}/reports`, {
+      await fetch(`${API_BASE_URL}/projects/${projectId}/reports`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

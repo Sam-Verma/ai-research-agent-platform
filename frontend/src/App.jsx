@@ -10,7 +10,7 @@ function App() {
 
   const fetchProjects = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/projects/');
+      const res = await fetch(`${API_BASE_URL}/projects/`);
       const data = await res.json();
       setProjects(data);
       if (data.length > 0 && !activeProjectId) {

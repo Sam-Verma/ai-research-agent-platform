@@ -23,11 +23,7 @@ class LLMService:
     async def close(self):
         await self.http_client.aclose()
 
-    def _format_messages(
-        self,
-        messages
-    ):
-
+    def _format_messages(self, messages):
         formatted = []
 
         for msg in messages:
@@ -35,16 +31,33 @@ class LLMService:
             if isinstance(msg, dict):
                 formatted.append(msg)
 
-            else:
+            elif hasattr(msg, "role"):
+                # OpenAI SDK messages
+                formatted.append(
+                    {
+                        "role": msg.role,
+                        "content": msg.content,
+                    }
+                )
+
+            elif hasattr(msg, "type"):
+                # LangChain messages
                 formatted.append(
                     {
                         "role": (
                             "user"
                             if msg.type == "human"
+                            else "assistant"
+                            if msg.type == "ai"
                             else msg.type
                         ),
-                        "content": msg.content
+                        "content": msg.content,
                     }
+                )
+
+            else:
+                raise TypeError(
+                    f"Unsupported message type: {type(msg)}"
                 )
 
         return formatted

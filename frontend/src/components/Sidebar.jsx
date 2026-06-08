@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LayoutDashboard, FileText, Database, BookOpen, Plus, UploadCloud, Download, Trash2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Sidebar({ projects, activeProjectId, setActiveProjectId, refreshProjects, onLoadReport, refreshTrigger }) {
   const [newProjectTitle, setNewProjectTitle] = useState('');
@@ -10,8 +11,8 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
   const fetchProjectData = async () => {
     if (!activeProjectId) return;
     try {
-      const docRes = await fetch(`http://127.0.0.1:8000/projects/${activeProjectId}/documents`);
-      const repRes = await fetch(`http://127.0.0.1:8000/projects/${activeProjectId}/reports`);
+      const docRes = await fetch(`${API_BASE_URL}/projects/${activeProjectId}/documents`);
+      const repRes = await fetch(`${API_BASE_URL}/projects/${activeProjectId}/reports`);
       setDocuments(await docRes.json());
       setReports(await repRes.json());
     } catch (e) { console.error("Error fetching project data", e); }
@@ -25,7 +26,7 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
     e.preventDefault();
     if (!newProjectTitle.trim()) return;
     
-    await fetch('http://127.0.0.1:8000/projects/', {
+    await fetch(`${API_BASE_URL}/projects/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: newProjectTitle, query: '' })
@@ -43,7 +44,7 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
     formData.append("project_id", activeProjectId);
 
     try {
-      await fetch('http://127.0.0.1:8000/upload/pdf', {
+      await fetch(`${API_BASE_URL}/upload/pdf`, {
         method: 'POST',
         body: formData
       });
@@ -93,7 +94,7 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
                 className="btn-project-delete"
                 onClick={() => {
                   if (window.confirm(`Delete project "${p.title}"? This will delete all documents and reports.`)) {
-                    fetch(`http://127.0.0.1:8000/projects/${p.id}`, { method: 'DELETE' })
+                    fetch(`${API_BASE_URL}/projects/${p.id}`, { method: 'DELETE' })
                       .then(() => { refreshProjects(); })
                       .catch(err => alert('Delete failed'));
                   }
@@ -161,7 +162,7 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
                   className="btn-download"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const url = `http://127.0.0.1:8000/projects/${activeProjectId}/reports/${r.id}/download`;
+                    const url = `${API_BASE_URL}/projects/${activeProjectId}/reports/${r.id}/download`;
                     const link = document.createElement('a');
                     link.href = url;
                     link.target = '_blank';
@@ -178,7 +179,7 @@ export default function Sidebar({ projects, activeProjectId, setActiveProjectId,
                   onClick={(e) => {
                     e.stopPropagation();
                     if (window.confirm(`Delete report "${r.title}"?`)) {
-                      fetch(`http://127.0.0.1:8000/projects/${activeProjectId}/reports/${r.id}`, { method: 'DELETE' })
+                      fetch(`${API_BASE_URL}/projects/${activeProjectId}/reports/${r.id}`, { method: 'DELETE' })
                         .then(() => fetchProjectData())
                         .catch(err => alert('Delete failed'));
                     }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Loader2, Sparkles, Zap, MessageSquare, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function ChatInterface({ projectId, onResearchComplete }) {
   const [messages, setMessages] = useState([]);
@@ -31,7 +32,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
     }
 
     let cancelled = false;
-    fetch(`http://127.0.0.1:8000/projects/${projectId}`)
+    fetch(`${API_BASE_URL}/projects/${projectId}`)
       .then(r => r.json())
       .then(d => { if (!cancelled) setProjectName(d.name || ''); })
       .catch(() => { if (!cancelled) setProjectName(''); });
@@ -67,7 +68,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
 
   const fetchHistory = async (projId, sessId) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/chat/history?project_id=${projId}&session_id=${sessId}`);
+      const res = await fetch(`${API_BASE_URL}/chat/history?project_id=${projId}&session_id=${sessId}`);
       const data = await res.json();
       setMessages(data.messages || []);
       onResearchComplete(null);
@@ -79,7 +80,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
 
   const fetchSessions = async (projId) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/chat/sessions?project_id=${projId}`);
+      const res = await fetch(`${API_BASE_URL}/chat/sessions?project_id=${projId}`);
       const data = await res.json();
       const ids = data.sessions?.map(s => s.session_id) || [];
       // Always ensure 'default-session' is available
@@ -130,7 +131,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
 
     try {
       if (chatMode === 'research') {
-        const response = await fetch('http://127.0.0.1:8000/chat/research', {
+        const response = await fetch(`${API_BASE_URL}/chat/research`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ project_id: projectId, session_id: sessionId, question: input, mode: deepResearch ? 'deep' : 'standard' })
@@ -140,7 +141,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
         onResearchComplete({ plan: data.plan, research: data.research, answer: data.answer, citations: data.citations || [] });
       
       } else if (chatMode === 'standard') {
-        const response = await fetch('http://127.0.0.1:8000/chat/', {
+        const response = await fetch(`${API_BASE_URL}/chat/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ project_id: projectId, session_id: sessionId, question: input })
@@ -149,7 +150,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.answer }]);
       
       } else if (chatMode === 'stream') {
-        const response = await fetch('http://127.0.0.1:8000/chat/stream', {
+        const response = await fetch(`${API_BASE_URL}/chat/stream`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ project_id: projectId, session_id: sessionId, question: input })
@@ -297,7 +298,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
               className="btn-session-delete"
               onClick={() => {
                 if (window.confirm(`Delete session "${sessionId}"? Chat history will be lost.`)) {
-                  fetch(`http://127.0.0.1:8000/chat/sessions?project_id=${projectId}&session_id=${sessionId}`, { method: 'DELETE' })
+                  fetch(`${API_BASE_URL}/chat/sessions?project_id=${projectId}&session_id=${sessionId}`, { method: 'DELETE' })
                     .then(() => {
                       setSessionId('default-session');
                       setSessions(prev => prev.filter(id => id !== sessionId));

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
 import ResearchCanvas from './components/ResearchCanvas';
+import { API_BASE_URL } from './config';
 
 function App() {
   const [projects, setProjects] = useState([]);

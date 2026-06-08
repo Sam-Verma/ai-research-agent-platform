@@ -1,4 +1,4 @@
-from typing import TypedDict, List, Dict, Any
+from typing import TypedDict, List, Dict, Any, Optional
 
 class ResearchState(TypedDict):
     project_id: int
@@ -8,3 +8,4 @@ class ResearchState(TypedDict):
     plan: str
     research: str
     answer: str
+    mode: Optional[str]

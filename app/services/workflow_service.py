@@ -59,74 +59,89 @@ class WorkflowService:
         plan = state.get("plan", "")
         mode = state.get("mode", "")
 
-        system_msg = f"You are a researcher agent. Your goal is to gather information to answer the user's question.\nHere is the research plan: {plan}\n\nAvailable Tools:\n- search_documents: searches internal documents.\n- web_search: searches the internet.\n- scrape_website: extracts detailed text from a specific URL.\n\nUse the tools to gather necessary context. Return the raw gathered context."
+        max_iterations = 8 if mode == 'deep' else 4
+
+        system_msg = f"You are a researcher agent. Your goal is to gather information to answer the user's question.\nHere is the research plan: {plan}\n\nAvailable Tools:\n- search_documents: searches internal documents.\n- web_search: searches the internet.\n- scrape_website: extracts detailed text from a specific URL.\n\nUse the tools to gather necessary context. If web_search returns promising URLs, use scrape_website to get detailed content from them. You can make multiple rounds of tool calls. When you have enough information, respond without any tool calls to finish."
         if mode == 'deep':
-            system_msg = "DEEP RESEARCH MODE ENABLED. Be thorough: iterate on searches, query multiple angles, use both internal document search and web search, and prioritize primary sources. If appropriate, perform additional tool calls to expand coverage and return extensive context with clear citations.\n\n" + system_msg
+            system_msg = "DEEP RESEARCH MODE ENABLED. Be thorough: iterate on searches, query multiple angles, use both internal document search and web search, and prioritize primary sources. Always scrape promising URLs from web search results to get detailed content. Perform additional tool calls to expand coverage and return extensive context with clear citations.\n\n" + system_msg
+
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_documents",
+                    "description": "Search uploaded documents for relevant information.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "Search query"}
+                        },
+                        "required": ["query"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "web_search",
+                    "description": "Search the web for information.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "Search query"}
+                        },
+                        "required": ["query"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "scrape_website",
+                    "description": "Scrapes the content of a specific webpage URL to extract detailed information.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "url": {"type": "string", "description": "The full URL of the website to scrape."}
+                        },
+                        "required": ["url"]
+                    }
+                }
+            }
+        ]
 
         messages = [
             {"role": "system", "content": system_msg},
             {"role": "user", "content": question}
         ]
 
-        response = await self.llm_service.client.chat.completions.create(
-            model=self.llm_service.model,
-            messages=messages,
-            tools=[
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "search_documents",
-                        "description": "Search uploaded documents for relevant information.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "query": {"type": "string", "description": "Search query"}
-                            },
-                            "required": ["query"]
-                        }
-                    }
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "web_search",
-                        "description": "Search the web for information.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "query": {"type": "string", "description": "Search query"}
-                            },
-                            "required": ["query"]
-                        }
-                    }
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "scrape_website",
-                        "description": "Scrapes the content of a specific webpage URL to extract detailed information.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "url": {"type": "string", "description": "The full URL of the website to scrape."}
-                            },
-                            "required": ["url"]
-                        }
-                    }
-                }
-            ],
-            tool_choice="auto",
-        )
-
-        message = response.choices[0].message
         research_context = ""
         citations = []
 
-        if message.tool_calls:
+        for iteration in range(max_iterations):
+            response = await self.llm_service.client.chat.completions.create(
+                model=self.llm_service.model,
+                messages=messages,
+                tools=tools,
+                tool_choice="auto",
+            )
+
+            message = response.choices[0].message
+
+            # If no tool calls, the agent is done — use its content as final context
+            if not message.tool_calls:
+                if message.content:
+                    research_context += f"\n\n{message.content}"
+                break
+
+            # Append the assistant message with tool_calls to conversation history
+            messages.append(message)
+
             for tool_call in message.tool_calls:
                 func_name = tool_call.function.name
                 args = json.loads(tool_call.function.arguments)
-                
+                tool_result = ""
+
                 if func_name == "search_documents":
                     results = search_documents(
                         query=args.get("query"),
@@ -135,9 +150,7 @@ class WorkflowService:
                         qdrant_service=self.qdrant_service
                     )
                     for idx, item in enumerate(results, start=1):
-                        research_context += (
-                            f"\n\n[Document Search Result {idx} from {item['source']}]:\n{item['snippet']}"
-                        )
+                        tool_result += f"\n[Document Search Result {idx} from {item['source']}]:\n{item['snippet']}"
                         citations.append({
                             "type": "document",
                             "source": item["source"],
@@ -145,13 +158,11 @@ class WorkflowService:
                             "query": args.get("query"),
                             "id": item.get("id"),
                         })
-                
+
                 elif func_name == "web_search":
                     results = web_search(query=args.get("query"))
                     for idx, result in enumerate(results, start=1):
-                        research_context += (
-                            f"\n\n[Web Search Result {idx} - {result.get('title', 'online source')}]:\n{result.get('body', '')[:800]}"
-                        )
+                        tool_result += f"\n[Web Search Result {idx} - {result.get('title', 'online source')}]:\n{result.get('body', '')[:800]}"
                         citations.append({
                             "type": "web",
                             "title": result.get("title", "Web Source"),
@@ -159,13 +170,11 @@ class WorkflowService:
                             "snippet": result.get("body", "")[:200],
                             "query": args.get("query"),
                         })
-                
+
                 elif func_name == "scrape_website":
                     from app.tools.scrape_tool import scrape_website
                     result = scrape_website(url=args.get("url"))
-                    research_context += (
-                        f"\n\n[Website Scrape Result for {args.get('url')}]:\n{result[:800]}"
-                    )
+                    tool_result = f"[Website Scrape Result for {args.get('url')}]:\n{result[:2000]}"
                     citations.append({
                         "type": "web",
                         "title": args.get("url"),
@@ -174,7 +183,19 @@ class WorkflowService:
                         "query": args.get("url"),
                     })
 
-        # If no tools were used, the researcher might just have answered directly
+                if not tool_result:
+                    tool_result = "No results found."
+
+                research_context += f"\n\n{tool_result}"
+
+                # Append tool result message so the LLM sees it in the next iteration
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": tool_result,
+                })
+
+        # If no research context was gathered, fallback to the last message content
         if not research_context and message.content:
             research_context = message.content
 
@@ -213,7 +234,7 @@ class WorkflowService:
         response = await self.llm_service.generate(messages=messages)
         return {"answer": response, "citations": citations}
 
-    async def execute(self, project_id: int, session_id: str, question: str) -> dict:
+    async def execute(self, project_id: int, session_id: str, question: str, mode: str = None) -> dict:
         await self.memory_service.get_or_create_session(
             project_id=project_id,
             session_id=session_id,
@@ -241,6 +262,7 @@ class WorkflowService:
             "research": "",
             "answer": "",
             "citations": [],
+            "mode": mode or "",
         }
 
         # Run the workflow

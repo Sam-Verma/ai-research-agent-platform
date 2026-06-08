@@ -34,7 +34,7 @@ export default function ChatInterface({ projectId, onResearchComplete }) {
     let cancelled = false;
     fetch(`${API_BASE_URL}/projects/${projectId}`)
       .then(r => r.json())
-      .then(d => { if (!cancelled) setProjectName(d.name || ''); })
+      .then(d => { if (!cancelled) setProjectName(d.title || ''); })
       .catch(() => { if (!cancelled) setProjectName(''); });
 
     return () => { cancelled = true; };
